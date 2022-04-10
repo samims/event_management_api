@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     # local apps
     'accounts',
+    'events',
 ]
 
 MIDDLEWARE = [
@@ -144,8 +145,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # to override the default user model
 AUTH_USER_MODEL = 'accounts.CustomUser'
-
-
 
 LOGGING = {
     'version': 1,
