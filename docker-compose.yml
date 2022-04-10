@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  db:
+    image: bitnami/postgresql:12
+    container_name: db
+    ports:
+      - "5433:5432"
+    env_file: .env
+    networks:
+      - skynet
+    volumes:
+      - db_data:/bitnami/postgresql
+
+
+  app:
+    restart: always
+    container_name: event_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+
+    command: >
+      sh -c "
+             python3 manage.py makemigrations --noinput &&
+             python3 manage.py migrate --noinput &&
+             python3 manage.py collectstatic --noinput &&
+             python3 manage.py runserver 0.0.0.0:8080"
+    networks:
+      - skynet
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+
+networks:
+  skynet:
