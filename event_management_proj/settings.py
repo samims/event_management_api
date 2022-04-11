@@ -158,6 +158,11 @@ LOGGING = {
         #     'format': '%(levelname)s %(message)s'
         # },
     },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
