@@ -19,3 +19,12 @@ class SignupSerializer(serializers.ModelSerializer):
                 'style': {'input_type': 'password'}
             }
         }
+
+    def create(self, validated_data):
+        """
+        Override to hash the password before saving the user.
+        otherwise password will be saved as plain text in the database.
+        """
+        user = get_user_model().objects.create_user(**validated_data)
+        return user
+
