@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     # local apps
     'accounts',
     'events',
+    # more of a common app/library
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -154,9 +156,6 @@ LOGGING = {
         'file_verb': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d  %(message)s'
         },
-        # 'simple': {
-        #     'format': '%(levelname)s %(message)s'
-        # },
     },
     'filters': {
         'require_debug_true': {
