@@ -10,6 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class SignUpAPIView(GenericAPIView):
     """
     Signup API View
@@ -18,7 +19,6 @@ class SignUpAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        logger.info("Signup API View")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

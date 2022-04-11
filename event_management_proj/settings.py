@@ -150,6 +150,14 @@ LOGGING = {
     'version': 1,
     # The version number of our log
     'disable_existing_loggers': False,
+    'formatters': {
+        'file_verb': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d  %(message)s'
+        },
+        # 'simple': {
+        #     'format': '%(levelname)s %(message)s'
+        # },
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
