@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Event
+from .models import Event, Booking
 
 
 class EventListSerializer(serializers.ModelSerializer):
@@ -66,3 +66,24 @@ class EventUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
+
+
+class BookingListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Booking List View
+    """
+    class Meta:
+        model = Booking
+        fields = '__all__'
+
+
+class BookingCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Booking Create View
+    """
+    participant = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Booking
+        fields = '__all__'
+
