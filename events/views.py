@@ -1,6 +1,7 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 
+from core.permissions import IsAdminOrOwnerOnly
 from .models import Event, Booking
 from events.serializers import (
     BookingListSerializer,
@@ -8,7 +9,7 @@ from events.serializers import (
     EventListSerializer,
     EventCreateSerializer,
     EventRetrieveSerializer,
-    EventUpdateSerializer
+    EventUpdateSerializer, BookingRetrieveSerializer
 )
 
 
@@ -17,8 +18,14 @@ class EventListCreateAPIView(ListCreateAPIView):
     List all events, or create a new event.
     """
     serializer_class = EventListSerializer
-    queryset = Event.objects.order_by('-start_date')
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        qs = Event.objects.all()
+        is_registered = self.request.query_params.get('registered', '').lower()
+        if is_registered == 'true':
+            qs = qs.filter(participants__in=[self.request.user])
+        return qs.order_by('-start_date')
 
     def get_serializer_class(self):
         """
@@ -92,4 +99,13 @@ class BookingListCreateAPIView(ListCreateAPIView):
         if self.request.method == 'GET':
             return BookingListSerializer
         return BookingCreateSerializer
+
+
+class BookingRetrieveAPIView(RetrieveAPIView):
+    """
+    Retrieve a booking instance.
+    """
+    queryset = Booking.objects.all()
+    serializer_class = BookingRetrieveSerializer
+    permission_classes = (IsAdminOrOwnerOnly,)
 

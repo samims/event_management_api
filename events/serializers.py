@@ -87,3 +87,14 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
 
+
+class BookingRetrieveSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Booking Retrieve View
+    """
+
+    class Meta:
+        model = Booking
+        fields = '__all__'
+
+
