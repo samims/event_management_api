@@ -1,8 +1,13 @@
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 
 from .models import Event
-from events.serializers import EventListSerializer, EventCreateSerializer
+from events.serializers import (
+    EventListSerializer,
+    EventCreateSerializer,
+    EventRetrieveSerializer,
+    EventUpdateSerializer
+)
 
 
 class EventListCreateAPIView(ListCreateAPIView):
@@ -37,3 +42,28 @@ class EventListCreateAPIView(ListCreateAPIView):
         set the user that created the event.
         """
         serializer.save(organizer=self.request.user)
+
+
+class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update or delete a event instance.
+    """
+    queryset = Event.objects.all()
+
+    def get_serializer_class(self):
+        """
+        Override the default serializer class
+        to return the appropriate serializer class for request method.
+        """
+        if self.request.method == 'GET':
+            return EventRetrieveSerializer
+        return EventUpdateSerializer
+
+    def get_permissions(self):
+        """
+        Override the default permission class
+        to allow only admin users to update events.
+        """
+        if self.request.method == 'GET':
+            return [IsAuthenticatedOrReadOnly()]
+        return [IsAdminUser()]

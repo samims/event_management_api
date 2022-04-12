@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import Event
@@ -8,20 +7,10 @@ class EventListSerializer(serializers.ModelSerializer):
     """
     Serializer for Event List View
     """
+
     class Meta:
         model = Event
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        """
-        Override to_representation to modify the output/response
-        """
-        data = super(EventListSerializer, self).to_representation(instance)
-        # we should show details of participants in public list api
-        # for admin it's ok
-        if not self.context['request'].user.is_superuser:
-            data.pop('participants')
-        return data
+        exclude = ('created_at', 'updated_at', 'participants')
 
 
 class EventCreateSerializer(serializers.ModelSerializer):
@@ -46,3 +35,34 @@ class EventCreateSerializer(serializers.ModelSerializer):
         # set the owner of the event to the current user
         data['organizer'] = self.context['request'].user
         return data
+
+
+class EventRetrieveSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Event Retrieve View
+    """
+
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        """
+        Override to_representation to modify the output/response
+        """
+        data = super(EventRetrieveSerializer, self).to_representation(instance)
+        # we should show details of participants in public list api
+        # for admin it's ok
+        if not self.context['request'].user.is_superuser:
+            data.pop('participants')
+        return data
+
+
+class EventUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Event Update View
+    """
+
+    class Meta:
+        model = Event
+        fields = '__all__'
