@@ -57,7 +57,7 @@ class Booking(BaseModel):
     """
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     participant = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    booking_code = models.CharField(max_length=255, blank=False)
+    booking_code = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.booking_code
@@ -65,3 +65,25 @@ class Booking(BaseModel):
     class Meta:
         ordering = ('-created_at',)
         get_latest_by = 'created_at'
+
+    @property
+    def booked_at(self):
+        """
+        property to get the booking date which is an al
+        """
+        return self.created_at
+
+
+@receiver(post_save, sender=Booking)
+def generate_booking_code(sender, instance, *args, **kwargs):
+    """
+    generate a booking code on pre_save signal
+    """
+    # it should only be generated if the booking code is not there
+    if not instance.booking_code:
+        # 5 digit random string to make it unique
+        instance.booking_code = get_random_string(length=8)
+        # TODO: scope for modification the booking code isn't really 100% unique
+        # TODO: we can use uuid/ any suffix or prefix to make it unique
+        instance.save()
+
