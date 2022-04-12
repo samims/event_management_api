@@ -57,7 +57,7 @@ class Booking(BaseModel):
     """
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     participant = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    booking_code = models.CharField(max_length=255, blank=True)
+    booking_code = models.CharField(max_length=255, blank=True, db_index=True)
 
     def __str__(self):
         return self.booking_code
@@ -72,6 +72,15 @@ class Booking(BaseModel):
         property to get the booking date which is an al
         """
         return self.created_at
+
+    @property
+    def owner(self):
+        """
+        property to get the owner of the booking
+        Doing this to reuse the permission class where we generally
+        user obj.owner == request.user & here owner == participant
+        """
+        return self.participant
 
 
 @receiver(post_save, sender=Booking)

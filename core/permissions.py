@@ -9,6 +9,5 @@ class IsAdminOrOwnerOnly(BasePermission):
         """
         return (
                 request.user.is_authenticated and
-                request.user.is_staff or
-                obj.owner == request.user
+                (request.user.is_staff or obj.owner == request.user)
         )
