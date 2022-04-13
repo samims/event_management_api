@@ -1,9 +1,12 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+
+from accounts.models import CustomUser
 
 
 class BaseModel(models.Model):
@@ -31,7 +34,7 @@ class Event(BaseModel):
     window_start_date = models.DateTimeField(db_index=True)
     window_end_date = models.DateTimeField(db_index=True)
 
-    capacity = models.IntegerField(blank=False)
+    capacity = models.PositiveIntegerField(blank=False)
     is_active = models.BooleanField(default=True)
     participants = models.ManyToManyField(get_user_model(), through='Booking',
                                           related_name='participated_events')
@@ -46,6 +49,25 @@ class Event(BaseModel):
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        """
+        Validate the email field to make sure it is a valid email address.
+        for some weird reason, django does not validate the email field on creation
+        """
+        # validate start_date and end_date
+        if self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be after end date')
+
+        # validate window_start_date and window_end_date
+        if self.window_start_date > self.window_end_date:
+            raise ValidationError('Window start date cannot be after window end date')
+
+        super(Event, self).clean()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super(Event, self).save(*args, **kwargs)
 
     @property
     def no_of_participants(self):
@@ -78,7 +100,14 @@ class Event(BaseModel):
         """
         Returns the last day booked seat count
         """
-        return self.participants.filter(created_at__date=self.window_end_date__date).count()
+        last_day_booking_qs = Booking.objects.filter(
+            created_at__day=self.window_end_date.day,
+            created_at__month=self.window_end_date.month,
+            created_at__year=self.window_end_date.year,
+            event=self
+        )
+        return last_day_booking_qs.count()
+
 
 
 class Booking(BaseModel):
