@@ -90,6 +90,74 @@ class EventListCreateAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 5)
 
+    def test_authenticated_user_can_see_registered_events(self):
+        """
+        Test that authenticated user can see only events he registered for
+         if registered query param is set to True.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        baker.make(
+            'events.Event',
+            _quantity=5,
+            participants=[self.user],
+            window_start_date=timezone.now() - timezone.timedelta(days=1),
+            window_end_date=timezone.now() + timezone.timedelta(days=5)
+        )
+        baker.make(
+            'events.Event',
+            _quantity=5,
+            window_start_date=timezone.now() - timezone.timedelta(days=1),
+            window_end_date=timezone.now() + timezone.timedelta(days=5),
+            start_date=timezone.now() + timezone.timedelta(days=10),
+            end_date=timezone.now() + timezone.timedelta(days=15)
+        )
+
+        # authenticate the user
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url + '?registered=true')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # should only show 5 events which s/he is registered for not the other 5
+        self.assertEqual(len(response.data), 5)
+
+    def test_authenticated_user_can_see_unregistered_events(self):
+        """
+        Test that authenticated user can see all events
+         if registered query param is set to False or not sent.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        baker.make(
+            'events.Event',
+            _quantity=5,
+            participants=[self.user],
+            window_start_date=timezone.now() - timezone.timedelta(days=1),
+            window_end_date=timezone.now() + timezone.timedelta(days=5)
+        )
+        baker.make(
+            'events.Event',
+            _quantity=5,
+            window_start_date=timezone.now() - timezone.timedelta(days=1),
+            window_end_date=timezone.now() + timezone.timedelta(days=5),
+            start_date=timezone.now() + timezone.timedelta(days=10),
+            end_date=timezone.now() + timezone.timedelta(days=15)
+        )
+
+        # authenticate the user
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url + '?registered=false')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 10)
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # should see all events
+        self.assertEqual(len(response.data), 10)
+
+
+
+
 
 
 
