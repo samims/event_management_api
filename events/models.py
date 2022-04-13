@@ -174,4 +174,5 @@ def generate_booking_code(sender, instance, *args, **kwargs):
 @receiver(pre_save, sender=Booking)
 def pre_save_handler(sender, instance, *args, **kwargs):
     if not instance.is_booking_window_open:
+        logger.warning('Booking window is closed for event: %s', instance.event.id)
         raise ValidationError('Booking window is closed')
