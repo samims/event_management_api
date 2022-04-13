@@ -84,7 +84,15 @@ class EventListCreateAPITestCase(APITestCase):
 
     def test_authenticated_user_can_see_event_list(self):
         self.client.force_authenticate(user=self.admin)
-        baker.make('events.Event', organizer=self.admin, _quantity=5)
+        baker.make(
+            'events.Event',
+            organizer=self.admin,
+            _quantity=5,
+            window_start_date=timezone.now() - timezone.timedelta(days=1),
+            window_end_date=timezone.now() + timezone.timedelta(days=5),
+            start_date=timezone.now() + timezone.timedelta(days=10),
+            end_date=timezone.now() + timezone.timedelta(days=15),
+        )
 
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

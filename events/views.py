@@ -76,7 +76,7 @@ class EventRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         to allow only admin users to update events.
         """
         if self.request.method == 'GET':
-            return [IsAuthenticatedOrReadOnly()]
+            return [IsAuthenticated()]
         return [IsAdminUser()]
 
 
