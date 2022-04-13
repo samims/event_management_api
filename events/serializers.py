@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import Event, Booking
@@ -22,6 +23,7 @@ class EventCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
+        read_only_fields = ('organizer',)
 
     def validate(self, data):
         """
