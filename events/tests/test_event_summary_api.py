@@ -62,8 +62,3 @@ class EventSummaryAPITestCase(APITestCase):
         self.assertEqual(response.data['organizer'], self.event.organizer.pk)
         self.assertEqual(response.data['participants'], [user.pk for user in self.event.participants.all()])
         self.assertEqual(response.data['no_of_participants'], self.event.no_of_participants)
-
-
-
-
-

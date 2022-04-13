@@ -23,6 +23,7 @@ class CustomUserModelTest(TransactionTestCase):
         )
         self.assertEqual(user.email, email)
         self.assertEqual(CustomUser.objects.count(), 1)
+        self.assertEqual(str(user), email)
 
         invalid_email = fake.text(10)
         # we can expect a ValidationError here because the email is invalid
