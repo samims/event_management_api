@@ -1,12 +1,16 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 from accounts.models import CustomUser
+
+logger = logging.getLogger(__name__)
 
 
 class BaseModel(models.Model):
@@ -91,7 +95,6 @@ class Event(BaseModel):
 
         is_booking_window_available = self.window_start_date <= timezone.now() <= self.window_end_date
         is_seat_available = bool(self.remaining_seat_count)
-
         # both conditions should be true to open for booking
         return is_booking_window_available and is_seat_available
 
@@ -107,7 +110,6 @@ class Event(BaseModel):
             event=self
         )
         return last_day_booking_qs.count()
-
 
 
 class Booking(BaseModel):
@@ -145,11 +147,20 @@ class Booking(BaseModel):
         """
         return self.participant
 
+    @property
+    def is_booking_window_open(self):
+        """
+        Returns True if the booking window is open
+        """
+        return self.event.window_start_date <= timezone.now() <= self.event.window_end_date
+
 
 @receiver(post_save, sender=Booking)
 def generate_booking_code(sender, instance, *args, **kwargs):
     """
     generate a booking code on pre_save signal
+    Making this post_save instead of pre_save to make sure that at least the obj is saved in db
+    booking code even can be generated manually
     """
     # it should only be generated if the booking code is not there
     if not instance.booking_code:
@@ -159,3 +170,8 @@ def generate_booking_code(sender, instance, *args, **kwargs):
         # TODO: we can use uuid/ any suffix or prefix to make it unique
         instance.save()
 
+
+@receiver(pre_save, sender=Booking)
+def pre_save_handler(sender, instance, *args, **kwargs):
+    if not instance.is_booking_window_open:
+        raise ValidationError('Booking window is closed')

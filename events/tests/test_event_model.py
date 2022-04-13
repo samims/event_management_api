@@ -57,6 +57,8 @@ class EventModelTest(TestCase):
 
         """
         self.data_1['participants'] = [self.user2, self.user3]
+        self.data_1['window_start_date'] = timezone.now() - timezone.timedelta(days=5)
+        self.data_1['window_end_date'] = timezone.now() + timezone.timedelta(days=5)
         self.data_1['organizer'] = self.user1
 
         event = baker.make('events.Event', **self.data_1)
@@ -68,6 +70,8 @@ class EventModelTest(TestCase):
         """
         self.data_1['participants'] = [self.user2, self.user3]
         self.data_1['organizer'] = self.user1
+        self.data_1['window_start_date'] = timezone.now() - timezone.timedelta(days=5)
+        self.data_1['window_end_date'] = timezone.now() + timezone.timedelta(days=5)
 
         event = baker.make('events.Event', **self.data_1)
         self.assertEqual(event.remaining_seat_count, event.capacity - event.no_of_participants)
@@ -76,9 +80,11 @@ class EventModelTest(TestCase):
         """
         Test the is_open_for_booking property
         """
-        self.data_1['participants'] = [self.user2, self.user3]
+        self.data_1['window_start_date'] = timezone.now() + timezone.timedelta(days=5)
+        self.data_1['window_end_date'] = timezone.now() + timezone.timedelta(days=10)
 
         event = baker.make('events.Event', **self.data_1)
+
         # cause window_start_date and window_end_date both are in the future
         self.assertFalse(event.is_open_for_booking)
 
@@ -95,7 +101,8 @@ class EventModelTest(TestCase):
         Test the last day booked seat count property
         """
         self.data_1['organizer'] = self.user1
-
+        self.data_1['window_start_date'] = timezone.now() - timezone.timedelta(days=1)
+        self.data_1['window_end_date'] = timezone.now() + timezone.timedelta(days=1)
         event = baker.make('events.Event', **self.data_1)
         # create a booking for the event on today
         baker.make('events.Booking', event=event, participant=self.user2)
