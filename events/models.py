@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 
@@ -45,6 +46,39 @@ class Event(BaseModel):
 
     def __str__(self):
         return self.title
+
+    @property
+    def no_of_participants(self):
+        """
+        Returns the number of participants for the event
+        """
+        return self.participants.count()
+
+    @property
+    def remaining_seat_count(self):
+        """
+        Returns the remaining seat count
+        """
+        return self.capacity - self.no_of_participants
+
+    @property
+    def is_open_for_booking(self):
+        """
+        Returns True if the event is open for booking
+        """
+
+        is_booking_window_available = self.window_start_date <= timezone.now() <= self.window_end_date
+        is_seat_available = bool(self.remaining_seat_count)
+
+        # both conditions should be true to open for booking
+        return is_booking_window_available and is_seat_available
+
+    @property
+    def last_day_booked_seat_count(self):
+        """
+        Returns the last day booked seat count
+        """
+        return self.participants.filter(created_at__date=self.window_end_date__date).count()
 
 
 class Booking(BaseModel):

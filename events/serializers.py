@@ -87,6 +87,15 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
 
+    def validate(self, data):
+        """
+        Validate the data event should be open for booking when the booking is created
+        """
+        event = Event.objects.get(id=data['event'].id)
+        if not event.is_open_for_booking:
+            raise serializers.ValidationError("Event is not open for booking")
+        return data
+
 
 class BookingRetrieveSerializer(serializers.ModelSerializer):
     """
@@ -97,4 +106,33 @@ class BookingRetrieveSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
 
+
+class EventSummarySerializer(serializers.ModelSerializer):
+    """
+    Serializer for Event Summary View
+    """
+
+    class Meta:
+        model = Event
+        fields = (
+            'id',
+            'title',
+            'capacity',
+            'short_description',
+            'long_description',
+            'window_start_date',
+            'window_end_date',
+            'start_date',
+            'end_date',
+            'is_active',
+            'organizer',
+            'participants',
+            'created_at',
+            'updated_at',
+            'no_of_participants',
+            'remaining_seat_count',
+            'is_open_for_booking',
+            'last_day_booked_seat_count',
+
+        )
 

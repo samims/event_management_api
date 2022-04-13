@@ -1,5 +1,7 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework.response import Response
 
 from core.permissions import IsAdminOrOwnerOnly
 from .models import Event, Booking
@@ -9,7 +11,7 @@ from events.serializers import (
     EventListSerializer,
     EventCreateSerializer,
     EventRetrieveSerializer,
-    EventUpdateSerializer, BookingRetrieveSerializer
+    EventUpdateSerializer, BookingRetrieveSerializer, EventSummarySerializer
 )
 
 
@@ -108,4 +110,30 @@ class BookingRetrieveAPIView(RetrieveAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingRetrieveSerializer
     permission_classes = (IsAdminOrOwnerOnly,)
+
+
+class EventSummaryAPIView(GenericAPIView):
+    """
+    Retrieve a summary of events.
+    """
+    queryset = Event.objects.all()
+    serializer_class = EventSummarySerializer
+    permission_classes = (IsAdminUser, )
+
+    def get(self, request, *args, **kwargs):
+
+        obj = self.get_object()
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
+
+    def get_object(self):
+        qs = self.filter_queryset(self.queryset)
+        try:
+            obj = qs.get(pk=self.kwargs.get('pk'))
+        except Event.DoesNotExist:
+            raise NotFound('Event not found')
+        return obj
+
+
+
 
