@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -99,6 +100,10 @@ DATABASES = {
     }
 }
 
+if 'test' in sys.argv or 'test\_coverage' in sys.argv:  # Covers regular testing and django-coverage
+    DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+    DATABASES['default']['NAME'] = ':memory:'
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -182,7 +187,6 @@ LOGGING = {
         },
     },
 }
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

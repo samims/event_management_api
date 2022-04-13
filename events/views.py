@@ -44,7 +44,7 @@ class EventListCreateAPIView(ListCreateAPIView):
         to allow only admin users to create events.
         """
         if self.request.method == 'GET':
-            return [IsAuthenticatedOrReadOnly()]
+            return [IsAuthenticated()]
         return [IsAdminUser()]
 
     def perform_create(self, serializer):

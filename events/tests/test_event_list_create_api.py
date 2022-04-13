@@ -52,7 +52,6 @@ class EventListCreateAPITestCase(APITestCase):
     def test_event_create_api_admin_can_create_event(self):
         self.client.force_authenticate(user=self.admin)
         response = self.client.post(self.url, self.payload)
-        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # test few data
@@ -82,6 +81,15 @@ class EventListCreateAPITestCase(APITestCase):
     def test_event_list_api_unauthenticated_request_fails(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authenticated_user_can_see_event_list(self):
+        self.client.force_authenticate(user=self.admin)
+        baker.make('events.Event', organizer=self.admin, _quantity=5)
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 5)
+
 
 
 
